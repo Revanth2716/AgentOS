@@ -1,0 +1,21 @@
+{
+  "name": "@agentos/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": { "agentos": "./bin/agentos.mjs" },
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@agentos/database": "*",
+    "@agentos/evaluation": "*",
+    "@agentos/model-providers": "*",
+    "@agentos/observability": "*",
+    "@agentos/policy-engine": "*",
+    "@agentos/runtime": "*",
+    "@agentos/shared": "*",
+    "@agentos/tool-registry": "*",
+    "@agentos/workflow-engine": "*",
+    "commander": "^12.1.0"
+  }
+}

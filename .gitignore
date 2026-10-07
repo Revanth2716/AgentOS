@@ -1,0 +1,39 @@
+# dependencies
+node_modules/
+package-lock.json.orig
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# runtime data (sqlite db, workspace sandbox, artifacts)
+.agentos/
+data/
+artifacts/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# env & secrets
+.env
+.env.local
+.env.*.local
+
+# logs & coverage
+logs/
+coverage/
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# playwright
+playwright-report/
+test-results/

@@ -1,0 +1,16 @@
+{
+  "name": "@agentos/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@agentos/database": "*",
+    "@agentos/model-providers": "*",
+    "@agentos/observability": "*",
+    "@agentos/policy-engine": "*",
+    "@agentos/shared": "*",
+    "@agentos/tool-registry": "*"
+  }
+}
