@@ -495,6 +495,8 @@ export class AgentRuntime {
         timeoutMs: Math.min(limits.toolTimeoutMs, tool.timeoutMs),
         rec,
         logger,
+        approvals,
+        steps,
         onResult: (r) => {
           toolCalls += 1;
           if (!r.ok) toolFailures += 1;
@@ -523,6 +525,8 @@ export class AgentRuntime {
     timeoutMs: number;
     rec: EventRecorder;
     logger: Logger;
+    approvals: ApprovalService;
+    steps: number;
     onResult(r: ToolResult): void;
     onRetry(): void;
   }): Promise<ToolResult> {
@@ -549,6 +553,36 @@ export class AgentRuntime {
             workspaceDir: args.workspaceDir,
             artifactsDir: args.artifactsDir,
             logger: args.logger,
+            requestApproval: async ({ summary, reason }) => {
+              const { approval, decided } = args.approvals.request({
+                runId: args.runId,
+                agentId: args.agentId,
+                tool: tool.name,
+                args: {},
+                summary,
+                reason,
+                kind: 'human_intervention',
+              });
+              args.rec.emit(
+                'approval_requested',
+                { approvalId: approval.id, tool: tool.name, summary, reason, kind: 'human_intervention' },
+                { tool: tool.name, status: 'pending' },
+              );
+              this.deps.db.runs.update(args.runId, { status: 'waiting_approval' });
+              this.deps.metrics.runsActive.set({}, this.deps.db.runs.active().length);
+              try {
+                const verdict = await decided;
+                args.rec.emit(
+                  verdict.status === 'approved' ? 'approval_granted' : 'approval_denied',
+                  { approvalId: approval.id, tool: tool.name, decidedBy: verdict.decidedBy },
+                  { tool: tool.name, status: verdict.status === 'approved' ? 'ok' : 'error' },
+                );
+                return verdict.status === 'approved' ? 'approved' : 'denied';
+              } finally {
+                this.deps.db.runs.update(args.runId, { status: 'running' });
+                this.deps.metrics.runsActive.set({}, this.deps.db.runs.active().length);
+              }
+            },
           }),
           args.timeoutMs,
           args.signal,

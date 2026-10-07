@@ -17,6 +17,12 @@ export interface ToolContext {
   /** Directory where publish-style tools may write (approval-gated). */
   artifactsDir: string;
   logger: ToolLogger;
+  /**
+   * Pauses the run for an operator decision (e.g. human verification on a
+   * blocked page). Resolves 'approved' | 'denied'. Wired by the runtime —
+   * tools never decide approvals themselves.
+   */
+  requestApproval?(req: { summary: string; reason: string }): Promise<'approved' | 'denied'>;
 }
 
 export type ToolErrorKind = 'validation' | 'transient' | 'permanent';
