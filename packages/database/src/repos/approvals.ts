@@ -116,10 +116,13 @@ export class ApprovalRepository {
     return row.n;
   }
 
+  /** Pending approval for a run id OR a workflow-run id. */
   pendingForRun(runId: string): Approval | null {
     const row = this.db
-      .prepare("SELECT * FROM approvals WHERE run_id = ? AND status = 'pending' ORDER BY requested_at DESC")
-      .get(runId) as ApprovalRow | undefined;
+      .prepare(
+        "SELECT * FROM approvals WHERE (run_id = ? OR workflow_run_id = ?) AND status = 'pending' ORDER BY requested_at DESC",
+      )
+      .get(runId, runId) as ApprovalRow | undefined;
     return row ? toApproval(row) : null;
   }
 }
