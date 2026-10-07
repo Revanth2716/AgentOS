@@ -30,6 +30,7 @@ npm-debug.log*
 # OS / editor
 .DS_Store
 Thumbs.db
+.freebuff/
 .idea/
 .vscode/
 *.swp
