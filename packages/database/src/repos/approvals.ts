@@ -109,6 +109,28 @@ export class ApprovalRepository {
     return this.get(id) as Approval;
   }
 
+  /** All approvals for a workflow run: its own gates + child-run approvals. */
+  listForWorkflow(workflowRunId: string): Approval[] {
+    const rows = this.db
+      .prepare(
+        `SELECT * FROM approvals
+         WHERE workflow_run_id = ?
+            OR run_id IN (SELECT id FROM runs WHERE workflow_run_id = ?)
+         ORDER BY requested_at ASC`,
+      )
+      .all(workflowRunId, workflowRunId) as ApprovalRow[];
+    return rows.map(toApproval);
+  }
+
+  /** Resolves all pending approvals (used at boot — no waiters survive a restart). */
+  resolveAllPending(decidedBy: string): number {
+    return this.db
+      .prepare(
+        `UPDATE approvals SET status = 'denied', decided_at = ?, decided_by = ? WHERE status = 'pending'`,
+      )
+      .run(Date.now(), decidedBy).changes;
+  }
+
   pendingCount(): number {
     const row = this.db
       .prepare("SELECT COUNT(*) AS n FROM approvals WHERE status = 'pending'")

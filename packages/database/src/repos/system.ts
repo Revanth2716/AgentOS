@@ -201,6 +201,16 @@ export class StatsRepository {
     return rows.map((r) => ({ day: r.day, runs: r.runs, failed: r.failed ?? 0 }));
   }
 
+  /** Policy decision counts since a timestamp (denies + rate limits = blocks). */
+  decisionCounts(sinceTs = 0): Record<string, number> {
+    const rows = this.db
+      .prepare('SELECT decision, COUNT(*) AS n FROM policy_decisions WHERE ts >= ? GROUP BY decision')
+      .all(sinceTs) as { decision: string; n: number }[];
+    const out: Record<string, number> = {};
+    for (const r of rows) out[r.decision] = r.n;
+    return out;
+  }
+
   agentPerformance(agentId: string): {
     runs: number;
     successRate: number;

@@ -173,6 +173,16 @@ export class WorkflowRepository {
     return this.getRun(id) as WorkflowRun;
   }
 
+  /** Marks open workflow runs as failed after a process restart. Returns count. */
+  interruptOpen(): number {
+    return this.db
+      .prepare(
+        `UPDATE workflow_runs SET status = 'failed', error = 'interrupted by process restart', ended_at = ?
+         WHERE status IN ('queued', 'running', 'waiting_approval', 'paused')`,
+      )
+      .run(Date.now()).changes;
+  }
+
   upsertNodeRun(input: {
     workflowRunId: string;
     nodeId: string;
