@@ -47,14 +47,16 @@ export class ToolRegistry {
     return { ok: missing.length === 0, missing };
   }
 
-  /** Tools an agent may see: declared in its tool list, registered, and permission-satisfied. */
-  resolveForAgent(
-    agent: { tools: readonly string[]; permissions: readonly string[] },
-  ): ToolDefinition[] {
+  /**
+   * Tools an agent may attempt: declared in its config and registered.
+   * Permission enforcement happens at execution time in the runtime (with a
+   * recorded deny), so attempts are auditable — this list feeds the model.
+   */
+  resolveForAgent(agent: { tools: readonly string[] }): ToolDefinition[] {
     const out: ToolDefinition[] = [];
     for (const name of agent.tools) {
       const tool = this.tools.get(name);
-      if (tool && this.checkPermissions(agent.permissions, tool).ok) out.push(tool);
+      if (tool) out.push(tool);
     }
     return out;
   }

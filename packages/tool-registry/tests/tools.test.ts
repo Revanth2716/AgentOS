@@ -87,14 +87,16 @@ describe('calculator', () => {
 });
 
 describe('registry permissions', () => {
-  it('resolves only permission-satisfied tools for an agent', () => {
+  it('resolves declared tools; permission gaps are flagged separately', () => {
     const reg = new ToolRegistry();
     reg.register(calculatorTool());
     reg.register(fsReadTool());
     reg.register(fsWriteTool());
     const agent = { tools: ['calculator', 'fs.read', 'fs.write'], permissions: ['fs:read'] };
     const resolved = reg.resolveForAgent(agent);
-    expect(resolved.map((t) => t.name)).toEqual(['calculator', 'fs.read']);
+    expect(resolved.map((t) => t.name)).toEqual(['calculator', 'fs.read', 'fs.write']);
+    // Permission enforcement happens at runtime execution time — checkPermissions
+    // powers the audit deny and the UI's capability warnings.
     const check = reg.checkPermissions(['fs:read'], fsWriteTool());
     expect(check.ok).toBe(false);
     expect(check.missing).toEqual(['fs:write']);
